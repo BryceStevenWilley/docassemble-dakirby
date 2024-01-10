@@ -1,0 +1,58 @@
+objects:
+  docassemble_yaml: DAFile
+---
+modules:
+  - dakirby.core.a2jauthor
+  - dakirby.core.hotdocs
+---
+mandatory: True
+code: |
+  type_of_interview
+  done_download
+---
+code: |
+  if type_of_interview == "a2j":
+    input_interview = A2JInterview(a2j_file.path())
+  else:
+    input_interview = HotDocsInterview(hotdoc_zip.path())
+---
+need:
+  - input_interview
+sets:
+  - docassemble_yaml.initialized
+code: |
+  docassemble_yaml.initialize(filename="interview.yml")
+  import dakirby.core.docassemble
+  docassemble_yaml.write(dakirby.core.docassemble.to_yaml(input_interview.to_yaml_objs()))
+  #with open(docassemble_yaml.path()) as f:
+  #  f.write(dakirby.core.docassemble.to_yaml(input_interview.to_yaml_objs()))
+---
+question: |
+  Convert your LHI interview
+subquestion: |
+  Here you can convert your A2J interviews and HotDocs interviews into starting docassemble interviews!
+fields:
+  - What type of interview do you have?: type_of_interview
+    choices:
+      A2J Author: a2j
+      HotDocs: hotdocs
+  - "Upload the `Guide.xml` from your A2J Author interview": a2j_file
+    datatype: file
+    accept: |
+      ".xml,application/xml,text/xml"
+    js show if: |
+      val("type_of_interview") == "a2j"
+  - "Upload a zip file of all of your HotDocs files": hotdoc_zip
+    datatype: file
+    accept: |
+      ".zip,application/zip"
+    js show if: |
+      val("type_of_interview") == "hotdocs"
+---
+event: done_download
+question: |
+  All done!
+subquestion: |
+  Here is your generated docassemble YAML:
+  
+  [Download here](${ docassemble_yaml.url_for() })
